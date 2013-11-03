@@ -7,13 +7,36 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
@@ -197,25 +220,64 @@ public class LoginActivity extends Activity {
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
 
+            Log.v("UserLoginTask", "doInBackground");
+            Looper.prepare();
+            HttpClient client = new DefaultHttpClient();
+            HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
+            HttpResponse response;
+
+            JSONObject json = new JSONObject();
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
+                String url = "https://railswolf.herokuapp.com/sessions";
+                HttpPost post = new HttpPost(url);
+                post.setHeader("Accept", "application/json");
+                json.put("email", mEmail);
+                json.put("password", mPassword);
+
+                StringEntity se = new StringEntity( json.toString());
+                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+
+                post.setEntity(se);
+                Log.v("Content type: ", post.getEntity().getContentType().getValue());
+
+                response = client.execute(post);
+
+
+                if (response != null) {
+                    String responsestring = new String();
+
+                    InputStream inputStream = response.getEntity().getContent();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder sb = new StringBuilder();
+                    String line = null;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+                    inputStream.close();
+                    String  jsonstring = sb.toString();
+
+                    JSONObject jobj = new JSONObject(jsonstring);
+                    String success = jobj.get("success").toString();
+
+                    Log.v("Login success", success);
+
+
+                    if (success.equals("true")) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Error: Cannot establish Connection",Toast.LENGTH_LONG).show();
+                e.printStackTrace();
                 return false;
             }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
+            return false;
         }
 
         @Override

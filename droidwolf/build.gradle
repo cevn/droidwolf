@@ -13,8 +13,15 @@ repositories {
 }
 
 android {
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+        }
+    }
     compileSdkVersion 19
-    buildToolsVersion "17.0.0"
+    buildToolsVersion "19.0.0"
+
+
 
     defaultConfig {
         minSdkVersion 16
@@ -24,4 +31,5 @@ android {
 
 dependencies {
 	compile 'com.android.support:support-v4:18.0.0'
+	compile 'com.google.code.gson:gson:2.2.+'
 }
