@@ -4,35 +4,42 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
 public class SignupActivity extends Activity {
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello",
-            "bar@example.com:world"
-    };
-
-    /**
-     * The default email to populate the email field with.
-     */
-    public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -42,10 +49,14 @@ public class SignupActivity extends Activity {
     // Values for email and password at the time of the login attempt.
     private String mEmail;
     private String mPassword;
+    private String mName;
+    private String mPasswordConfirm;
 
     // UI references.
     private EditText mEmailView;
+    private EditText mNameView;
     private EditText mPasswordView;
+    private EditText mPasswordConfirmView;
     private View mLoginFormView;
     private View mLoginStatusView;
     private TextView mLoginStatusMessageView;
@@ -57,15 +68,19 @@ public class SignupActivity extends Activity {
         setContentView(R.layout.activity_signup);
 
         // Set up the login form.
-        mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
+        mEmail = getIntent().getStringExtra("email");
         mEmailView = (EditText) findViewById(R.id.email);
+        mNameView  = (EditText) findViewById(R.id.fullname);
         mEmailView.setText(mEmail);
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+
+
+        mPasswordConfirmView = (EditText) findViewById(R.id.password_confirm);
+        mPasswordConfirmView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                if ((id == R.id.login) || (id == EditorInfo.IME_NULL)) {
                     attemptLogin();
                     return true;
                 }
@@ -109,7 +124,10 @@ public class SignupActivity extends Activity {
 
         // Store values at the time of the login attempt.
         mEmail = mEmailView.getText().toString();
+        mName = mNameView.getText().toString();
         mPassword = mPasswordView.getText().toString();
+        mPasswordConfirm = mPasswordView.getText().toString();
+
 
         boolean cancel = false;
         View focusView = null;
@@ -194,37 +212,92 @@ public class SignupActivity extends Activity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, String> {
         @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+        protected String doInBackground(Void... params) {
 
+            Log.v("UserLoginTask", "doInBackground");
+            Looper.prepare();
+            HttpClient client = new DefaultHttpClient();
+            HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
+            HttpResponse response;
+
+            JSONObject json = new JSONObject();
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
+                String url = "https://railswolf.herokuapp.com/users";
+                HttpPost post = new HttpPost(url);
+                post.setHeader("Accept", "application/json");
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                json.put("email", mEmail);
+                json.put("name", mName);
+                json.put("password", mPassword);
+                json.put("password_confirmation", mPasswordConfirm);
+
+
+                StringEntity se = new StringEntity( json.toString());
+                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+
+                post.setEntity(se);
+
+                response = client.execute(post);
+
+
+                if (response != null) {
+                    InputStream inputStream = response.getEntity().getContent();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line).append("\n");
+                    }
+                    inputStream.close();
+                    String  jsonstring = sb.toString();
+
+                    JSONObject jobj = new JSONObject(jsonstring);
+                    String success = jobj.get("success").toString();
+                    String auth_token = jobj.get("auth_token").toString();
+
+
+
+                    Log.v("Signup success", success);
+                    Log.v("auth_token", auth_token);
+
+
+                    if (success.equals("true")) {
+                        return auth_token;
+                    }
+                    else {
+                        return "";
+                    }
                 }
-            }
 
-            // TODO: register the new account here.
-            return true;
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Error: Cannot establish Connection", Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+                return "";
+            }
+            return "";
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final String auth_token) {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
-                finish();
+            if (!auth_token.isEmpty()) {
+                Intent mIntent = new Intent(SignupActivity.this, DashActivity.class);
+                mIntent.putExtra("email", mEmail);
+                mIntent.putExtra("auth_token", auth_token);
+
+                SharedPreferences sp = getPreferences(MODE_PRIVATE);
+                SharedPreferences.Editor spedit = sp.edit();
+
+                spedit.putString("email", mEmail);
+                spedit.putString("auth_token", auth_token);
+                spedit.commit();
+
+                startActivity(mIntent);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();

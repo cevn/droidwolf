@@ -90,6 +90,13 @@ public class LoginActivity extends Activity {
                 attemptLogin();
             }
         });
+
+        findViewById(R.id.sign_up_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(LoginActivity.this, SignupActivity.class));
+            }
+        });
     }
 
 

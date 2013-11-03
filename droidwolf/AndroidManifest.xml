@@ -19,29 +19,25 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.cevn.droidwolf.MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name="com.cevn.droidwolf.LoginActivity"
-            android:label="@string/app_name" >
+            android:name="com.cevn.droidwolf.LoginActivity" >
         </activity>
 
         <activity
-            android:name="com.cevn.droidwolf.DashActivity"
-            android:label="@string/title_activity_dash" >
+            android:name="com.cevn.droidwolf.SignupActivity" >
         </activity>
 
         <activity
-            android:name="com.cevn.droidwolf.SignupActivity"
-            android:label="@string/title_activity_signup"
-            android:windowSoftInputMode="adjustResize|stateVisible" >
+            android:name="com.cevn.droidwolf.DashActivity" >
         </activity>
-
     </application>
 
 </manifest>
