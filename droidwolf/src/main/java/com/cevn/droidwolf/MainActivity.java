@@ -15,9 +15,8 @@ import android.view.ViewGroup;
 public class MainActivity extends Activity {
 
 
-    private final String TAG = this.getClass().getSimpleName();
+    protected final String TAG = this.getClass().getSimpleName();
 
-    private String mAuthTokenType;
     SharedPreferences mSharedPrefs;
 
     @Override
@@ -89,8 +88,7 @@ public class MainActivity extends Activity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
+            return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
 
