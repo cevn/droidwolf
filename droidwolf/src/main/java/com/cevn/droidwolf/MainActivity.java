@@ -1,59 +1,51 @@
 package com.cevn.droidwolf;
 
 
-import static com.cevn.droidwolf.authentication.AccountGeneral.AUTHTOKEN_TYPE_FULL_ACCESS;
-
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.ActionBar;
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 
 public class MainActivity extends Activity {
-    public final static String ARG_ACCOUNT_TYPE = "ACCOUNT_TYPE";
-    public final static String ARG_AUTH_TYPE = "AUTH_TYPE";
-    public final static String ARG_ACCOUNT_NAME = "ACCOUNT_NAME";
-    public final static String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
 
-    public static final String KEY_ERROR_MESSAGE = "ERR_MSG";
-
-    public final static String PARAM_USER_PASS = "USER_PASS";
-
-    private final int REQ_SIGNUP = 1;
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private AccountManager mAccountManager;
     private String mAuthTokenType;
+    SharedPreferences mSharedPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mAccountManager = AccountManager.get(getBaseContext());
-        Account[] accounts = mAccountManager.getAccountsByType("com.cevn");
+        mSharedPrefs = getPreferences(MODE_PRIVATE);
 
-        if (accounts.length == 0) {
-            addAccount();
+        String email = mSharedPrefs.getString("email", null);
+        String password = mSharedPrefs.getString("password", null);
+        String auth_token = mSharedPrefs.getString("auth_token", null);
+
+        if (email == null) {
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
         }
 
-        if (accounts.length == 1) {
-            Intent myIntent = new Intent(MainActivity.this, DashActivity.class);
-            myIntent.putExtra("account", accounts[0]);
-            startActivity(myIntent);
+        if (email != null) {
+            if (auth_token == null) {
+                startActivity(new Intent(MainActivity.this, LoginActivity.class).putExtra("email",email));
+            }
+            else if (auth_token != null) {
+                Intent mIntent = new Intent(MainActivity.this, DashActivity.class);
+                mIntent.putExtra("email", email);
+                mIntent.putExtra("password", password);
 
+                startActivity(mIntent);
+            }
         }
 
-        if (accounts.length > 1) {
-            showAccountPicker();
-        }
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -65,15 +57,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    protected boolean addAccount() {
-        boolean success = false;
-
-        return success;
-    }
-
-    protected void showAccountPicker() {
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

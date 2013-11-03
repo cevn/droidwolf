@@ -1,6 +1,6 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".LoginActivity2">
+    tools:context=".SignupActivity">
 
     <!-- Login progress -->
     <LinearLayout android:id="@+id/login_status"
@@ -43,6 +43,15 @@
                 android:hint="@string/prompt_email" />
 
             <EditText
+                android:id="@+id/fullname"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:hint="@string/prompt_fullname" />
+
+            <EditText
                 android:id="@+id/password"
                 android:singleLine="true"
                 android:maxLines="1"
@@ -54,11 +63,24 @@
                 android:imeActionId="@+id/login"
                 android:imeOptions="actionUnspecified" />
 
+
+            <EditText
+                android:id="@+id/password_confirm"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_password_confirm"
+                android:inputType="textPassword"
+                android:imeActionLabel="@string/action_sign_in_short"
+                android:imeActionId="@+id/login"
+                android:imeOptions="actionUnspecified" />
+
             <Button android:id="@+id/sign_in_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/action_sign_in"
+                android:text="@string/action_sign_up"
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
                 android:layout_gravity="center_horizontal" />

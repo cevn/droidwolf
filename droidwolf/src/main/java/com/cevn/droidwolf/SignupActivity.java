@@ -4,41 +4,35 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.protocol.HTTP;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity {
+public class SignupActivity extends Activity {
+    /**
+     * A dummy authentication store containing known user names and passwords.
+     * TODO: remove after connecting to a real authentication system.
+     */
+    private static final String[] DUMMY_CREDENTIALS = new String[]{
+            "foo@example.com:hello",
+            "bar@example.com:world"
+    };
+
+    /**
+     * The default email to populate the email field with.
+     */
+    public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -60,11 +54,10 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_signup);
 
         // Set up the login form.
-        mEmail = getIntent().getStringExtra("email");
-        mEmail = getPreferences(MODE_PRIVATE).getString("email", "");
+        mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
         mEmailView = (EditText) findViewById(R.id.email);
         mEmailView.setText(mEmail);
 
@@ -96,7 +89,7 @@ public class LoginActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.login_activity, menu);
+        getMenuInflater().inflate(R.menu.signup, menu);
         return true;
     }
 
@@ -120,8 +113,6 @@ public class LoginActivity extends Activity {
 
         boolean cancel = false;
         View focusView = null;
-
-        if (!TextUtils.isEmpty(mEmail)) mPasswordView.requestFocus();
 
         // Check for a valid password.
         if (TextUtils.isEmpty(mPassword)) {
@@ -203,88 +194,37 @@ public class LoginActivity extends Activity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, String> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
         @Override
-        protected String doInBackground(Void... params) {
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
 
-            Log.v("UserLoginTask", "doInBackground");
-            Looper.prepare();
-            HttpClient client = new DefaultHttpClient();
-            HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
-            HttpResponse response;
-
-            JSONObject json = new JSONObject();
             try {
-                String url = "https://railswolf.herokuapp.com/sessions";
-                HttpPost post = new HttpPost(url);
-                post.setHeader("Accept", "application/json");
-                json.put("email", mEmail);
-                json.put("password", mPassword);
-
-                StringEntity se = new StringEntity( json.toString());
-                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-
-                post.setEntity(se);
-
-                response = client.execute(post);
-
-
-                if (response != null) {
-                    InputStream inputStream = response.getEntity().getContent();
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder sb = new StringBuilder();
-                    String line = null;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line + "\n");
-                    }
-                    inputStream.close();
-                    String  jsonstring = sb.toString();
-
-                    JSONObject jobj = new JSONObject(jsonstring);
-                    String success = jobj.get("success").toString();
-                    String auth_token = jobj.get("auth_token").toString();
-
-
-
-                    Log.v("Login success", success);
-                    Log.v("auth_token", auth_token);
-
-
-                    if (success.equals("true")) {
-                        return auth_token;
-                    }
-                    else {
-                        return "";
-                    }
-                }
-
-            } catch (Exception e) {
-                Toast.makeText(getApplicationContext(), "Error: Cannot establish Connection",Toast.LENGTH_LONG).show();
-                e.printStackTrace();
-                return "";
+                // Simulate network access.
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                return false;
             }
-            return "";
+
+            for (String credential : DUMMY_CREDENTIALS) {
+                String[] pieces = credential.split(":");
+                if (pieces[0].equals(mEmail)) {
+                    // Account exists, return true if the password matches.
+                    return pieces[1].equals(mPassword);
+                }
+            }
+
+            // TODO: register the new account here.
+            return true;
         }
 
         @Override
-        protected void onPostExecute(final String auth_token) {
+        protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             showProgress(false);
 
-            if (!auth_token.isEmpty()) {
-                Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
-                mIntent.putExtra("email", mEmail);
-                mIntent.putExtra("auth_token", auth_token);
-
-                SharedPreferences sp = getPreferences(MODE_PRIVATE);
-                SharedPreferences.Editor spedit = sp.edit();
-
-                spedit.putString("email", mEmail);
-                spedit.putString("auth_token", auth_token);
-                spedit.commit();
-
-                startActivity(mIntent);
+            if (success) {
+                finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
