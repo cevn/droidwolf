@@ -44,7 +44,7 @@ public class SignupActivity extends Activity {
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+    private UserSignupTask mAuthTask = null;
 
     // Values for email and password at the time of the login attempt.
     private String mEmail;
@@ -61,9 +61,14 @@ public class SignupActivity extends Activity {
     private View mLoginStatusView;
     private TextView mLoginStatusMessageView;
 
+    protected final String TAG = this.getClass().getSimpleName();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
 
         setContentView(R.layout.activity_signup);
 
@@ -163,7 +168,7 @@ public class SignupActivity extends Activity {
             // perform the user login attempt.
             mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
             showProgress(true);
-            mAuthTask = new UserLoginTask();
+            mAuthTask = new UserSignupTask();
             mAuthTask.execute((Void) null);
         }
     }
@@ -212,11 +217,11 @@ public class SignupActivity extends Activity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, String> {
+    public class UserSignupTask extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
 
-            Log.v("UserLoginTask", "doInBackground");
+            Log.v("UserSignupTask", "doInBackground");
             Looper.prepare();
             HttpClient client = new DefaultHttpClient();
             HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
@@ -232,6 +237,8 @@ public class SignupActivity extends Activity {
                 json.put("name", mName);
                 json.put("password", mPassword);
                 json.put("password_confirmation", mPasswordConfirm);
+
+                Log.v("Signup Json:", json.toString());
 
 
                 StringEntity se = new StringEntity( json.toString());
@@ -255,18 +262,17 @@ public class SignupActivity extends Activity {
                     String  jsonstring = sb.toString();
 
                     JSONObject jobj = new JSONObject(jsonstring);
-                    String success = jobj.get("success").toString();
-                    String auth_token = jobj.get("auth_token").toString();
 
+                    Log.v(TAG + "> response JSON", jobj.toString());
 
-
-                    Log.v("Signup success", success);
-                    Log.v("auth_token", auth_token);
-
-
-                    if (success.equals("true")) {
+                    if (jobj.get("success".toString()) != null) {
+                        String success = jobj.get("success").toString();
+                        String auth_token = jobj.get("auth_token").toString();
+                        Log.v("Signup success", success);
+                        Log.v("auth_token", auth_token);
                         return auth_token;
                     }
+
                     else {
                         return "";
                     }
