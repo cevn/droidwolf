@@ -6,10 +6,8 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -18,21 +16,11 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.protocol.HTTP;
-import org.json.JSONObject;
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
@@ -40,14 +28,10 @@ import java.io.InputStreamReader;
  */
 public class LoginActivity extends Activity {
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
-
     // Values for email and password at the time of the login attempt.
     private String mEmail;
     private String mPassword;
+    private final String TAG = "LoginActivity >";
 
     // UI references.
     private EditText mEmailView;
@@ -113,9 +97,6 @@ public class LoginActivity extends Activity {
      * errors are presented and no actual login attempt is made.
      */
     public void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
 
         // Reset errors.
         mEmailView.setError(null);
@@ -161,8 +142,48 @@ public class LoginActivity extends Activity {
             // perform the user login attempt.
             mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
             showProgress(true);
-            mAuthTask = new UserLoginTask();
-            mAuthTask.execute((Void) null);
+
+            JsonObject json = new JsonObject();
+
+            String url = "https://railswolf.herokuapp.com/sessions";
+
+            json.addProperty("email", mEmail);
+            json.addProperty("password", mPassword);
+
+            Ion.with(getApplicationContext(), url)
+                    .setHeader("Content-Type", "application/json")
+                    .setHeader("Accept", "application/json")
+                    .setJsonObjectBody(json)
+                    .asJsonObject()
+                    .setCallback(new FutureCallback<JsonObject>() {
+                        @Override
+                        public void onCompleted(Exception e, JsonObject response) {
+                            if (e != null) e.printStackTrace();
+
+                            if (response != null) {
+                                Log.v(TAG, response.toString());
+                                String success = response.get("success").toString();
+                                String id = response.get("id").toString();
+                                Log.v("Login success", success);
+                                Log.v("User id", id);
+                                showProgress(false);
+
+                                Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
+
+                                SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+                                SharedPreferences.Editor spedit = sp.edit();
+
+                                spedit.putString("email", mEmail);
+                                spedit.putString("user_id", id);
+                                spedit.commit();
+
+                                    startActivity(mIntent);
+                                } else {
+                                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+                                    mPasswordView.requestFocus();
+                                }
+                            }
+                    });
         }
     }
 
@@ -203,105 +224,6 @@ public class LoginActivity extends Activity {
             // and hide the relevant UI components.
             mLoginStatusView.setVisibility(show ? View.VISIBLE : View.GONE);
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, String> {
-        @Override
-        protected String doInBackground(Void... params) {
-
-            Log.v("UserLoginTask", "doInBackground");
-            Looper.prepare();
-            HttpClient client = new DefaultHttpClient();
-            HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
-            HttpResponse response;
-
-            JSONObject json = new JSONObject();
-            try {
-                String url = "https://railswolf.herokuapp.com/sessions";
-                HttpPost post = new HttpPost(url);
-                post.setHeader("Accept", "application/json");
-                json.put("email", mEmail);
-                json.put("password", mPassword);
-
-                StringEntity se = new StringEntity( json.toString());
-                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-
-                post.setEntity(se);
-
-                response = client.execute(post);
-
-
-                if (response != null) {
-                    InputStream inputStream = response.getEntity().getContent();
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line).append("\n");
-                    }
-                    inputStream.close();
-                    String  jsonstring = sb.toString();
-
-                    JSONObject jobj = new JSONObject(jsonstring);
-                    String success = jobj.get("success").toString();
-                    String auth_token = jobj.get("auth_token").toString();
-
-
-
-                    Log.v("Login success", success);
-                    Log.v("auth_token", auth_token);
-
-
-                    if (success.equals("true")) {
-                        return auth_token;
-                    }
-                    else {
-                        return "";
-                    }
-                }
-
-            } catch (Exception e) {
-                Toast.makeText(getApplicationContext(), "Error: Cannot establish Connection",Toast.LENGTH_LONG).show();
-                e.printStackTrace();
-                return "";
-            }
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(final String auth_token) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (!auth_token.isEmpty()) {
-                Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
-                mIntent.putExtra("email", mEmail);
-                mIntent.putExtra("auth_token", auth_token);
-
-                SharedPreferences sp = getPreferences(MODE_PRIVATE);
-                SharedPreferences.Editor spedit = sp.edit();
-
-                spedit.putString("email", mEmail);
-                spedit.putString("auth_token", auth_token);
-                spedit.commit();
-
-                startActivity(mIntent);
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
         }
     }
 }

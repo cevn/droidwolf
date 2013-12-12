@@ -2,6 +2,7 @@ package com.cevn.droidwolf;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -9,11 +10,15 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -42,10 +47,7 @@ public class BackgroundLocationService extends Service implements
     private static final int FASTEST_INTERVAL_IN_SECONDS = 30;
     // A fast frequency ceiling in milliseconds
     public static final long FASTEST_INTERVAL = MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
-    // Stores the lat / long pairs in a text file
-    private static final String LOCATION_FILE = "sdcard/location.txt";
-    // Stores the connect / disconnect data in a text file
-    private static final String LOG_FILE = "sdcard/log.txt";
+    private static final String TAG = "BackgroundLocationService.java >";
 
     IBinder mBinder = new LocalBinder();
 
@@ -113,7 +115,6 @@ public class BackgroundLocationService extends Service implements
         setUpLocationClientIfNeeded();
         if(!mLocationClient.isConnected() || !mLocationClient.isConnecting() && !mInProgress)
         {
-            appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Started", LOG_FILE);
             mInProgress = true;
             mLocationClient.connect();
         }
@@ -135,51 +136,51 @@ public class BackgroundLocationService extends Service implements
     @Override
     public void onLocationChanged(Location location) {
         // Report to the UI that the location was updated
+
+
+
+        String baseurl = "https://railswolf.herokuapp.com/users/";
+        String userid = getApplicationContext().getSharedPreferences("user", MODE_PRIVATE).getString("user_id", "could not find id");
+        String route = "/character/move";
+
+        String url = baseurl + userid + route;
+
+        Log.v(TAG, url);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("lat", Double.toString(location.getLatitude()));
+        json.addProperty("long", Double.toString(location.getLongitude()));
+        json.addProperty("id", userid);
+
+        Log.v(TAG, json.toString());
+
+        Ion.with(getApplicationContext(), url)
+                .setHeader("Content-Type", "application/json")
+                .setHeader("Accept", "application/json")
+                .setJsonObjectBody(json)
+                .asJsonObject()
+                .setCallback(new FutureCallback<JsonObject>() {
+                    @Override
+                    public void onCompleted(Exception e, JsonObject response) {
+                        if (e != null) e.printStackTrace();
+
+                        if (response != null) {
+                            Log.v(TAG, response.toString());
+                            String success = response.get("success").toString();
+                            Log.v(TAG, success);
+                        }
+                    }
+                });
+
         String msg = Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
-        Log.d("debug", msg);
-        // Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        appendLog(msg, LOCATION_FILE);
+        Log.d(TAG, msg);
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
-    }
-
-    public String getTime() {
-        SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return mDateFormat.format(new Date());
-    }
-
-    public void appendLog(String text, String filename)
-    {
-        File logFile = new File(filename);
-        if (!logFile.exists())
-        {
-            try
-            {
-                logFile.createNewFile();
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        try
-        {
-            //BufferedWriter for performance, true to set append to file flag
-            BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
-            buf.append(text);
-            buf.newLine();
-            buf.close();
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -193,7 +194,11 @@ public class BackgroundLocationService extends Service implements
         }
         // Display the connection status
         // Toast.makeText(this, DateFormat.getDateTimeInstance().format(new Date()) + ": Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
-        appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Stopped", LOG_FILE);
+        Log.v(TAG, "droidwolf location service stopped");
+        SharedPreferences sp = getApplicationContext().getSharedPreferences("location", MODE_PRIVATE);
+        SharedPreferences.Editor spedit = sp.edit();
+        spedit.putBoolean("locationServices", false);
+        spedit.commit();
         super.onDestroy();
     }
 
@@ -207,8 +212,6 @@ public class BackgroundLocationService extends Service implements
 
         // Request location updates using static settings
         mLocationClient.requestLocationUpdates(mLocationRequest, this);
-        appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Connected", LOG_FILE);
-
     }
 
     /*
@@ -222,8 +225,7 @@ public class BackgroundLocationService extends Service implements
         // Destroy the current location client
         mLocationClient = null;
         // Display the connection status
-        // Toast.makeText(this, DateFormat.getDateTimeInstance().format(new Date()) + ": Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
-        appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Disconnected", LOG_FILE);
+        //Toast.makeText(this, DateFormat.getDateTimeInstance().format(new Date()) + ": Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
     }
 
     /*

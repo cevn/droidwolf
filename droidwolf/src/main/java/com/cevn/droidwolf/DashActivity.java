@@ -4,14 +4,13 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class DashActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -39,15 +38,31 @@ public class DashActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        checkLocationService();
+    }
+
+    private void checkLocationService() {
+        SharedPreferences sp = getSharedPreferences("location", MODE_PRIVATE);
+
+        Log.d("CHECK_SERVICE", "Service running: " + (sp.getBoolean("locationService", false) ? "YES" : "NO"));
+
+        if(sp.getBoolean("locationService", false)) return;
+
+        Intent mServiceIntent = new Intent(this, BackgroundLocationService.class);
+        startService(mServiceIntent);
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
+        Fragment mFragment = new MyMapFragment();
+
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, mFragment)
                 .commit();
+
     }
 
     public void onSectionAttached(int number) {
@@ -94,52 +109,23 @@ public class DashActivity extends Activity
         switch (item.getItemId()) {
             case R.id.action_settings:
                 return true;
+            case R.id.action_signout:
+                signOut();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+    private void signOut() {
+        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+        SharedPreferences.Editor spedit = sp.edit();
+        spedit.remove("remember_token");
+        spedit.commit();
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
+        Intent mServiceIntent = new Intent(this, BackgroundLocationService.class);
+        stopService(mServiceIntent);
 
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_dash, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
-
-
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((DashActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
+        Intent mIntent = new Intent(this, LoginActivity.class);
+        startActivity(mIntent);
     }
-
 }
