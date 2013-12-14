@@ -47,12 +47,12 @@
         </activity>
 
 
-        <service android:name=".BackgroundLocationService"
+        <service android:name="com.cevn.droidwolf.BackgroundLocationService"
             android:enabled="true"
             android:exported="false"
             android:label="BackgroundLocationService" />
 
-        <receiver android:name=".LocationServiceManager"
+        <receiver android:name="com.cevn.droidwolf.LocationServiceManager"
             android:enabled="true"
             android:exported="false"
             android:label="LocationServiceManager">

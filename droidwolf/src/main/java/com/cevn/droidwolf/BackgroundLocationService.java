@@ -56,12 +56,16 @@ public class BackgroundLocationService extends Service implements
     // Flag that indicates if a request is underway.
     private boolean mInProgress;
 
-    private Boolean servicesAvailable = false;
+    private boolean servicesAvailable = false;
 
     public class LocalBinder extends Binder {
-        public BackgroundLocationService getServerInstance() {
+        public BackgroundLocationService getServiceInstance() {
             return BackgroundLocationService.this;
         }
+    }
+
+    public Location getLocation() {
+        return mLocationClient.getLastLocation();
     }
 
     @Override
@@ -175,7 +179,9 @@ public class BackgroundLocationService extends Service implements
         String msg = Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
         Log.d(TAG, msg);
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
+        MyMapFragment.updateLocation(location, getApplicationContext());
+        //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override

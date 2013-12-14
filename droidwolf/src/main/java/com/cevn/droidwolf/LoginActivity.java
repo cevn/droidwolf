@@ -164,6 +164,8 @@ public class LoginActivity extends Activity {
                                 Log.v(TAG, response.toString());
                                 String success = response.get("success").toString();
                                 String id = response.get("id").toString();
+                                boolean werewolf = response.get("werewolf").getAsBoolean();
+
                                 Log.v("Login success", success);
                                 Log.v("User id", id);
                                 showProgress(false);
@@ -175,6 +177,7 @@ public class LoginActivity extends Activity {
 
                                 spedit.putString("email", mEmail);
                                 spedit.putString("user_id", id);
+                                spedit.putBoolean("werewolf", werewolf);
                                 spedit.commit();
 
                                     startActivity(mIntent);

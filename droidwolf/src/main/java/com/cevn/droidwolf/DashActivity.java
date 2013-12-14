@@ -4,13 +4,19 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 public class DashActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -24,6 +30,9 @@ public class DashActivity extends Activity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
+    private Fragment mFragment;
+    private String TAG = "DashActivity > ";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,27 +66,35 @@ public class DashActivity extends Activity
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
-        Fragment mFragment = new MyMapFragment();
+        Log.v(TAG, "position = " + position);
+        Fragment f = fragmentManager.findFragmentByTag("mapfrag");
+        if(f != null){
+            fragmentManager.beginTransaction().remove(f).commit();
+        }
 
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, mFragment)
-                .commit();
 
-    }
-
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
+        switch (position) {
+            case 0:
                 mTitle = getString(R.string.title_section1);
+                mFragment = new MyMapFragment().newInstance();
+                break;
+            case 1:
+                mTitle = getString(R.string.title_section2);
+                mFragment = new MyListFragment().newInstance();
+
                 break;
             case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
                 mTitle = getString(R.string.title_section3);
+                mFragment = new MyGameFragment().newInstance();
                 break;
+
         }
+
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, mFragment)
+                .commit();
     }
+
 
     public void restoreActionBar() {
         ActionBar actionBar = getActionBar();

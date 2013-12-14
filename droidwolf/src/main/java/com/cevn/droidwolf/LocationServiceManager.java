@@ -12,7 +12,7 @@ import android.util.Log;
  */
 public class LocationServiceManager extends BroadcastReceiver{
     private SharedPreferences mPrefs;
-    public static final String TAG = "LocationLoggerServiceManager";
+    public static final String TAG = "LocationServiceManager";
     @Override
     public void onReceive(Context context, Intent intent) {
         // Make sure we are getting the right intent

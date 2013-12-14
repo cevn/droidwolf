@@ -2,59 +2,74 @@ package com.cevn.droidwolf;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.ArrayList;
 
 /**
  * A map fragment containing a simple view.
  */
 public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowClickListener,
-        LocationListener,
-        GoogleMap.OnMapLongClickListener {
+        GoogleMap.OnMapLongClickListener{
 
-    private LocationManager mLocManager;
-    private Location mLocation;
+
+    private static final String TAG = "MyMapFragment >";
+    private static Marker marker;
+    private static Circle scentRadius;
+    private static Circle killRadius;
+
+    private static ArrayList<Integer> charList;
+
+    private static View mView;
 
     private MapFragment mMapFragment;
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
 
-    public MyMapFragment() {
-        super();
-
-    }
 
     public static MyMapFragment newInstance() {
         MyMapFragment fragment = new MyMapFragment();
         return fragment;
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-
         FragmentManager fm = getActivity().getFragmentManager();
         mMapFragment = (MapFragment) fm.findFragmentById(R.id.map);
 
+        if (mView != null) {
+            ViewGroup parent = (ViewGroup) mView.getParent();
+            if (parent != null) parent.removeView(mView);
+        }
+
+        try {
+            mView = inflater.inflate(R.layout.fragment_map, container, false);
+        } catch (InflateException e) {}
+
         if (mMapFragment == null) {
             mMapFragment = MapFragment.newInstance();
-            fm.beginTransaction().replace(R.id.map, mMapFragment).commit();
+            fm.beginTransaction().replace(R.id.map, mMapFragment, "mapfrag").commit();
         }
 
         if (savedInstanceState == null) {
@@ -67,20 +82,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
         }
 
         createMapIfNeeded();
-
-
-        return inflater.inflate(R.layout.fragment_map, container, false);
-
-    }
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (mMap != null) {
-            ViewGroup parentViewGroup = (ViewGroup) mMapFragment.getParentFragment().getView();
-            if (parentViewGroup != null) {
-                parentViewGroup.removeAllViews();
-            }
-        }
+        return mView;
     }
 
     void createMapIfNeeded() {
@@ -89,17 +91,8 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
             mMap = mMapFragment.getMap();
             //check it has been instantiated
 
-            if(mLocManager == null){
-                mLocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                mLocManager.requestLocationUpdates(
-                        LocationManager.NETWORK_PROVIDER,
-                        BackgroundLocationService.UPDATE_INTERVAL,
-                        10,
-                        this);
-            }
 
             //locmanager can return null if no last known locaiton is available.
-            mLocation = mLocManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
 
             if(mMap != null){
@@ -114,11 +107,6 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
                 setting.setRotateGesturesEnabled(true);
                 setting.setZoomControlsEnabled(true);
                 setting.setMyLocationButtonEnabled(true);
-
-                if(mLocation != null){
-                    CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(mLocation.getLatitude(), mLocation.getLongitude()), 15);
-                    mMap.animateCamera(cu);
-                }
             }
         }
     }
@@ -128,37 +116,58 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
         super.onActivityCreated(savedInstanceState);
         mMapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mMap = mMapFragment.getMap();
-    }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mMap == null) {
-            mMap = mMapFragment.getMap();
-            mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)));
+        try {
+            MapsInitializer.initialize(getActivity());
+        } catch (GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
         }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
+    public static void updateLocation(Location mLocation, Context context){
+        Log.v(TAG, "updating map location");
+        LatLng latLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 16.5f);
 
+        SharedPreferences sp = context.getSharedPreferences("user", Context.MODE_PRIVATE);
+        boolean werewolf = sp.getBoolean("werewolf", false);
+
+        if (marker == null) marker = mMap.addMarker(new MarkerOptions().position(latLng));
+        else {
+            marker.remove();
+            marker = mMap.addMarker(new MarkerOptions().position(latLng));
+        }
+
+        if (werewolf) {
+
+             if (scentRadius == null) {
+                 scentRadius = mMap.addCircle(new CircleOptions()
+                         .radius(150).center(latLng).fillColor(Color.argb(127, 20, 147, 46)).zIndex(0));
+             }
+             else {
+                 scentRadius.remove();
+                 scentRadius = mMap.addCircle(new CircleOptions()
+                         .radius(150).center(latLng).fillColor(Color.argb(127, 20, 147, 46)).zIndex(0));
+
+             }
+
+            if (killRadius == null) {
+                killRadius = mMap.addCircle(new CircleOptions()
+                        .radius(50).center(latLng).fillColor(Color.argb(127, 250, 20, 31)).zIndex(1));
+            }
+            else {
+                killRadius.remove();
+                killRadius = mMap.addCircle(new CircleOptions()
+                        .radius(50).center(latLng).fillColor(Color.argb(127, 250, 20, 31)).zIndex(1));
+            }
+        }
+
+        if (mMap != null) {
+            Log.v(TAG, "animating camera");
+            mMap.animateCamera(cameraUpdate, 4000, null);
+        }
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
 
     @Override
     public void onInfoWindowClick(Marker marker) {
