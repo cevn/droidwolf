@@ -9,7 +9,6 @@
         android:targetSdkVersion="19" />
 
 
-    <uses-permission android:name="com.cevn.permission.MAPS_RECEIVE" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
