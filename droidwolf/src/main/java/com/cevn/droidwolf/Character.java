@@ -1,16 +1,20 @@
 package com.cevn.droidwolf;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * Created by sameer on 12/14/13.
  */
 public class Character {
-    public int id;
-    public String name;
+    private int id;
+    private int user_id;
+    private String name;
     public boolean werewolf;
+    private boolean dead;
 
-    public Character() {
-        super();
-    }
+    private double latitude;
+    private double longitude;
+
 
     public Character(int id, String name, boolean werewolf) {
         this.id = id;
@@ -18,4 +22,7 @@ public class Character {
         this.werewolf = werewolf;
     }
 
+    public String getName() {
+        return this.name;
+    }
 }

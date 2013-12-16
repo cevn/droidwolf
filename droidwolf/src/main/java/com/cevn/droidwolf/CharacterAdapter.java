@@ -32,9 +32,8 @@ public class CharacterAdapter extends ArrayAdapter<Character> {
 
         if(row == null)
         {
-            LayoutInflater inflater = ((Activity)context).getLayoutInflater();
-            row = inflater.inflate(layoutResourceId, parent, false);
-
+            LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            row = vi.inflate(R.layout.listview_item_row, parent, false);
             holder = new CharacterHolder();
             holder.txtTitle = (TextView)row.findViewById(R.id.txtTitle);
 
@@ -46,7 +45,7 @@ public class CharacterAdapter extends ArrayAdapter<Character> {
         }
 
         Character mChar = characterList.get(position);
-        holder.txtTitle.setText(mChar.name);
+        holder.txtTitle.setText(mChar.getName());
 
         return row;
     }
