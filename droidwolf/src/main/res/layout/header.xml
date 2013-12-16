@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <TextView android:id="@+id/txtTitle"
+    <TextView android:text="Name"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="fill_parent"
@@ -18,7 +17,7 @@
         android:layout_marginBottom="5dp" />
 
     <TextView
-        android:id="@+id/charVotes"
+        android:text="Votes"
         android:layout_width="0dp"
         android:layout_weight=".3"
         android:layout_height="fill_parent"

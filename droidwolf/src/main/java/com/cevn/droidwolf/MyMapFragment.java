@@ -162,6 +162,11 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
             }
         }
 
+        if (!werewolf) {
+            ArrayList<Character> mCharacterList = Character.downloadChars(context);
+
+        }
+
         if (mMap != null) {
             Log.v(TAG, "animating camera");
             mMap.animateCamera(cameraUpdate, 4000, null);

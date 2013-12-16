@@ -47,8 +47,7 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_login);
 
         // Set up the login form.
-        mEmail = getIntent().getStringExtra("email");
-        mEmail = getPreferences(MODE_PRIVATE).getString("email", "");
+        mEmail = getSharedPreferences("user", MODE_PRIVATE).getString("email", "");
         mEmailView = (EditText) findViewById(R.id.email);
         mEmailView.setText(mEmail);
 
@@ -163,25 +162,27 @@ public class LoginActivity extends Activity {
                             if (response != null) {
                                 Log.v(TAG, response.toString());
                                 String success = response.get("success").toString();
-                                String id = response.get("id").toString();
-                                boolean werewolf = response.get("werewolf").getAsBoolean();
+                                if (success.equals("true")) {
+                                    String id = response.get("id").toString();
+                                    boolean werewolf = response.get("werewolf").getAsBoolean();
 
-                                Log.v("Login success", success);
-                                Log.v("User id", id);
-                                showProgress(false);
+                                    Log.v("Login success", success);
+                                    Log.v("User id", id);
+                                    showProgress(false);
 
-                                Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
+                                    Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
 
-                                SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
-                                SharedPreferences.Editor spedit = sp.edit();
+                                    SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+                                    SharedPreferences.Editor spedit = sp.edit();
 
-                                spedit.putString("email", mEmail);
-                                spedit.putString("user_id", id);
-                                spedit.putBoolean("werewolf", werewolf);
-                                spedit.commit();
+                                    spedit.putString("email", mEmail);
+                                    spedit.putString("user_id", id);
+                                    spedit.putBoolean("werewolf", werewolf);
+                                    spedit.commit();
 
                                     startActivity(mIntent);
-                                } else {
+                                }
+                            } else {
                                     mPasswordView.setError(getString(R.string.error_incorrect_password));
                                     mPasswordView.requestFocus();
                                 }
