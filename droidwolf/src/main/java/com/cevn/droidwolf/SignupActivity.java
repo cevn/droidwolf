@@ -20,6 +20,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -44,7 +48,6 @@ public class SignupActivity extends Activity {
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserSignupTask mAuthTask = null;
 
     // Values for email and password at the time of the login attempt.
     private String mEmail;
@@ -109,7 +112,7 @@ public class SignupActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.signup, menu);
+        getMenuInflater().inflate(R.menu.global, menu);
         return true;
     }
 
@@ -119,10 +122,6 @@ public class SignupActivity extends Activity {
      * errors are presented and no actual login attempt is made.
      */
     public void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -146,6 +145,15 @@ public class SignupActivity extends Activity {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
+        } else if (TextUtils.isEmpty(mPasswordConfirm)) {
+            mPasswordConfirmView.setError(getString(R.string.error_field_required));
+            focusView = mPasswordConfirmView;
+            cancel = true;
+        } else if (!mPassword.equals(mPasswordConfirm)) {
+            mPasswordView.setError(getString(R.string.error_match_password));
+            focusView = mPasswordView;
+            cancel = true;
+
         }
 
         // Check for a valid email address.
@@ -168,8 +176,58 @@ public class SignupActivity extends Activity {
             // perform the user login attempt.
             mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
             showProgress(true);
-            mAuthTask = new UserSignupTask();
-            mAuthTask.execute((Void) null);
+            JsonObject json = new JsonObject();
+
+            String url = "https://railswolf.herokuapp.com/users";
+
+            json.addProperty("email", mEmail);
+            json.addProperty("name", mName);
+            json.addProperty("password", mPassword);
+            json.addProperty("password_confirmation", mPasswordConfirm);
+
+            JsonObject user = new JsonObject();
+
+            user.add("user", json);
+
+            Log.v("Signup json", user.toString());
+
+            Ion.with(getApplicationContext(), url)
+                    .setHeader("Content-Type", "application/json")
+                    .setHeader("Accept", "application/json")
+                    .setJsonObjectBody(user)
+                    .asJsonObject()
+                    .setCallback(new FutureCallback<JsonObject>() {
+                        @Override
+                        public void onCompleted(Exception e, JsonObject response) {
+                            if (e != null) e.printStackTrace();
+
+                            if (response != null) {
+                                Log.v(TAG, response.toString());
+                                String success = response.get("success").toString();
+                                String id = response.get("id").toString();
+                                boolean werewolf = response.get("werewolf").getAsBoolean();
+
+                                Log.v("Signup success", success);
+                                Log.v("User id", id);
+                                showProgress(false);
+
+                                Intent mIntent = new Intent(SignupActivity.this, DashActivity.class);
+
+                                SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+                                SharedPreferences.Editor spedit = sp.edit();
+
+                                spedit.putString("email", mEmail);
+                                spedit.putString("user_id", id);
+                                spedit.putBoolean("werewolf", werewolf);
+                                spedit.commit();
+
+                                startActivity(mIntent);
+                            } else {
+                                mPasswordView.setError(getString(R.string.error_incorrect_password));
+                                mPasswordView.requestFocus();
+                            }
+                        }
+                    });
         }
     }
 
@@ -210,110 +268,6 @@ public class SignupActivity extends Activity {
             // and hide the relevant UI components.
             mLoginStatusView.setVisibility(show ? View.VISIBLE : View.GONE);
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserSignupTask extends AsyncTask<Void, Void, String> {
-        @Override
-        protected String doInBackground(Void... params) {
-
-            Log.v("UserSignupTask", "doInBackground");
-            Looper.prepare();
-            HttpClient client = new DefaultHttpClient();
-            HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
-            HttpResponse response;
-
-            JSONObject json = new JSONObject();
-            try {
-                String url = "https://railswolf.herokuapp.com/users";
-                HttpPost post = new HttpPost(url);
-                post.setHeader("Accept", "application/json");
-
-                json.put("email", mEmail);
-                json.put("name", mName);
-                json.put("password", mPassword);
-                json.put("password_confirmation", mPasswordConfirm);
-
-                Log.v("Signup Json:", json.toString());
-
-
-                StringEntity se = new StringEntity( json.toString());
-                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-
-                post.setEntity(se);
-
-                response = client.execute(post);
-
-
-                if (response != null) {
-                    InputStream inputStream = response.getEntity().getContent();
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line).append("\n");
-                    }
-                    inputStream.close();
-                    String  jsonstring = sb.toString();
-
-                    JSONObject jobj = new JSONObject(jsonstring);
-
-                    Log.v(TAG + "> response JSON", jobj.toString());
-
-                    if (jobj.get("success".toString()) != null) {
-                        String success = jobj.get("success").toString();
-                        String auth_token = jobj.get("auth_token").toString();
-                        Log.v("Signup success", success);
-                        Log.v("auth_token", auth_token);
-                        return auth_token;
-                    }
-
-                    else {
-                        return "";
-                    }
-                }
-
-            } catch (Exception e) {
-                Toast.makeText(getApplicationContext(), "Error: Cannot establish Connection", Toast.LENGTH_LONG).show();
-                e.printStackTrace();
-                return "";
-            }
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(final String auth_token) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (!auth_token.isEmpty()) {
-                Intent mIntent = new Intent(SignupActivity.this, DashActivity.class);
-                mIntent.putExtra("email", mEmail);
-                mIntent.putExtra("auth_token", auth_token);
-
-                SharedPreferences sp = getPreferences(MODE_PRIVATE);
-                SharedPreferences.Editor spedit = sp.edit();
-
-                spedit.putString("email", mEmail);
-                spedit.putString("auth_token", auth_token);
-                spedit.commit();
-
-                startActivity(mIntent);
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
         }
     }
 }

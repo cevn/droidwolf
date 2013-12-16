@@ -62,9 +62,9 @@ public class MyListFragment extends ListFragment {
                 R.layout.listview_item_row,
                 mCharacterList);
 
-        ListView charListView = new ListView(getActivity());
-        charListView.setAdapter(mAdapter);
 
-        return charListView;
+        setListAdapter(mAdapter);
+
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 }
