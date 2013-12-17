@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -41,6 +42,9 @@ public class Character {
     }
     public int getVotes() { return this.votes; }
     public int getId() { return this.id; }
+    public LatLng getLocation() {
+        return new LatLng(latitude, longitude);
+    }
 
     final static public ArrayList<Character> downloadChars(Context context) {
         final ArrayList<Character> mCharacterList = new ArrayList<Character>();

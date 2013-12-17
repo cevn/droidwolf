@@ -39,6 +39,8 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
     private static Marker marker;
     private static Circle scentRadius;
     private static Circle killRadius;
+    private static boolean wereinit = false;
+    private static ArrayList<Marker> townsList;
 
     private static ArrayList<Integer> charList;
 
@@ -132,22 +134,26 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
         SharedPreferences sp = context.getSharedPreferences("user", Context.MODE_PRIVATE);
         boolean werewolf = sp.getBoolean("werewolf", false);
 
-        if (marker == null) marker = mMap.addMarker(new MarkerOptions().position(latLng));
+        if (marker == null) {
+            marker = mMap.addMarker(new MarkerOptions().position(latLng));
+            marker.showInfoWindow();
+        }
         else {
             marker.remove();
-            marker = mMap.addMarker(new MarkerOptions().position(latLng));
+            marker = mMap.addMarker(new MarkerOptions().position(latLng).title("You"));
+            marker.showInfoWindow();
         }
 
         if (werewolf) {
 
              if (scentRadius == null) {
                  scentRadius = mMap.addCircle(new CircleOptions()
-                         .radius(150).center(latLng).fillColor(Color.argb(127, 20, 147, 46)).zIndex(0));
+                         .radius(200).center(latLng).fillColor(Color.argb(127, 20, 147, 46)).zIndex(0));
              }
              else {
                  scentRadius.remove();
                  scentRadius = mMap.addCircle(new CircleOptions()
-                         .radius(150).center(latLng).fillColor(Color.argb(127, 20, 147, 46)).zIndex(0));
+                         .radius(200).center(latLng).fillColor(Color.argb(127, 20, 147, 46)).zIndex(0));
 
              }
 
@@ -162,10 +168,37 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
             }
         }
 
-        if (!werewolf) {
+        if (werewolf && townsList == null) {
+            townsList = new ArrayList<Marker>();
             ArrayList<Character> mCharacterList = Character.downloadChars(context);
 
+            for (Character character : mCharacterList) {
+                Location charLocation = new Location("Test");
+                charLocation.setLatitude(character.getLocation().latitude);
+                charLocation.setLongitude(character.getLocation().longitude);
+                if (mLocation.distanceTo(charLocation) < 200) {
+                    Marker mMarker = mMap.addMarker(new MarkerOptions().position(character.getLocation()).title(character.getName()));
+                    mMarker.showInfoWindow();
+                }
+            }
+        } else if (townsList != null) {
+            for (Marker mMarker : townsList) {
+                //mMarker.remove();
+            }
+
+                ArrayList<Character> mCharacterList = Character.downloadChars(context);
+
+                for (Character character : mCharacterList) {
+                Location charLocation = new Location("Test");
+                charLocation.setLatitude(character.getLocation().latitude);
+                charLocation.setLongitude(character.getLocation().longitude);
+                if (mLocation.distanceTo(charLocation) < 200) {
+                    Marker mMarker = mMap.addMarker(new MarkerOptions().position(character.getLocation()).title(character.getName()));
+                    mMarker.showInfoWindow();
+                }
+            }
         }
+
 
         if (mMap != null) {
             Log.v(TAG, "animating camera");
