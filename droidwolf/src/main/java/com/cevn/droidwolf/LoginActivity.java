@@ -157,31 +157,35 @@ public class LoginActivity extends Activity {
                     .setCallback(new FutureCallback<JsonObject>() {
                         @Override
                         public void onCompleted(Exception e, JsonObject response) {
-                            if (e != null) e.printStackTrace();
+                            if (e != null) {
+                                e.printStackTrace();
+                            }
 
                             if (response != null) {
                                 Log.v(TAG, response.toString());
-                                String success = response.get("success").toString();
-                                if (success.equals("true")) {
-                                    String id = response.get("id").toString();
-                                    boolean werewolf = response.get("werewolf").getAsBoolean();
+                                try {
+                                    String success = response.get("success").toString();
+                                    if (success.equals("true")) {
+                                        String id = response.get("id").toString();
+                                        boolean werewolf = response.get("werewolf").getAsBoolean();
 
-                                    Log.v("Login success", success);
-                                    Log.v("User id", id);
-                                    showProgress(false);
+                                        Log.v("Login success", success);
+                                        Log.v("User id", id);
+                                        showProgress(false);
 
-                                    Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
+                                        Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
 
-                                    SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
-                                    SharedPreferences.Editor spedit = sp.edit();
+                                        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+                                        SharedPreferences.Editor spedit = sp.edit();
 
-                                    spedit.putString("email", mEmail);
-                                    spedit.putString("user_id", id);
-                                    spedit.putBoolean("werewolf", werewolf);
-                                    spedit.commit();
+                                        spedit.putString("email", mEmail);
+                                        spedit.putString("user_id", id);
+                                        spedit.putBoolean("werewolf", werewolf);
+                                        spedit.commit();
 
-                                    startActivity(mIntent);
-                                }
+                                        startActivity(mIntent);
+                                    }
+                                } catch (Exception f) {}
                             } else {
                                     mPasswordView.setError(getString(R.string.error_incorrect_password));
                                     mPasswordView.requestFocus();

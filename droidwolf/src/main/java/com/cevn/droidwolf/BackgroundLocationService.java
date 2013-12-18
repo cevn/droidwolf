@@ -10,6 +10,8 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
@@ -30,8 +32,6 @@ import java.util.Date;
 
 /**
  * BackgroundLocationService used for tracking user location in the background.
- *
- * @author cblack
  */
 public class BackgroundLocationService extends Service implements
         GooglePlayServicesClient.ConnectionCallbacks,
@@ -101,10 +101,8 @@ public class BackgroundLocationService extends Service implements
 
         // If Google Play services is available
         if (ConnectionResult.SUCCESS == resultCode) {
-
             return true;
         } else {
-
             return false;
         }
     }
@@ -180,7 +178,9 @@ public class BackgroundLocationService extends Service implements
                 Double.toString(location.getLongitude());
         Log.d(TAG, msg);
 
-        MyMapFragment.updateLocation(location, getApplicationContext());
+        MyMapFragment mFragment = MyMapFragment.newInstance();
+
+        mFragment.updateLocation(location, getApplicationContext());
         //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
