@@ -84,10 +84,10 @@ public class CharacterAdapter extends ArrayAdapter<Character> {
                                 Log.v(TAG, response.toString());
                                 Log.v(TAG, response.get("success").toString());
                                 if (response.get("success").equals("true")) {
-                                    Toast.makeText(getContext(), "Voting for" + mChar2.getName() + "succeeded!", Toast.LENGTH_LONG);
+                                    Toast.makeText(getContext().getApplicationContext(), "Voting for" + mChar2.getName() + "succeeded!", Toast.LENGTH_LONG);
                                 }
                                 else if (response.get("success").equals("false")) {
-                                    Toast.makeText(getContext(), "You can only vote once per day.", Toast.LENGTH_LONG);
+                                    Toast.makeText(getContext().getApplicationContext(), "You can only vote once per day.", Toast.LENGTH_LONG);
                                 }
                             }
                         });

@@ -1,8 +1,11 @@
 package com.cevn.droidwolf;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
@@ -25,24 +28,28 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
+import java.util.WeakHashMap;
 
 /**
  * A map fragment containing a simple view.
  */
-public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowClickListener,
-        GoogleMap.OnMapLongClickListener{
+public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickListener {
 
 
+    private static Dialog d;
     private static final String TAG = "MyMapFragment >";
     private static Marker marker;
     private static Circle scentRadius;
     private static Circle killRadius;
     private static boolean wereinit = false;
     private static ArrayList<Marker> townsList;
+    private static WeakHashMap<String, Character> markerCharMap = new WeakHashMap<String, Character>();
 
-    private static ArrayList<Integer> charList;
 
     private static View mView;
 
@@ -89,6 +96,11 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
 
     void createMapIfNeeded() {
         if(mMap == null){
+            d = new Dialog(getActivity());
+            d.setContentView(R.layout.mapview_marker_dialog);
+            d.setTitle("Kill player?");
+            d.setCanceledOnTouchOutside(true);
+
             //instantiate map
             mMap = mMapFragment.getMap();
             //check it has been instantiated
@@ -99,7 +111,49 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
 
             if(mMap != null){
                 mMap.setOnMapLongClickListener(this);
-                mMap.setOnInfoWindowClickListener(this);
+                Log.v(TAG, "Setting window click listener");
+                mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        Character mChar = markerCharMap.get(marker.getId());
+                        final String id = getActivity().getSharedPreferences("user", Context.MODE_PRIVATE).getString("user_id", "none found");
+                        final int victim_id = mChar.getId();
+
+                        Log.v(TAG, "Marker clicked");
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle("Kill " + mChar.getName())
+                                .setMessage("Are you sure you want to kill " + mChar.getName() + "?")
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        JsonObject jsonObject = new JsonObject();
+                                        jsonObject.addProperty("id", id);
+                                        jsonObject.addProperty("victimid", victim_id);
+                                        String baseurl = "https://railswolf.herokuapp.com/users/" ;
+                                        String user_id = id;
+                                        String route = "/character/kill";
+                                        String url = baseurl + user_id + route;
+                                        Ion.with(getActivity(), url)
+                                                .setHeader("Content-Type", "application/json")
+                                                .setHeader("Accept", "application/json")
+                                                .setJsonObjectBody(jsonObject)
+                                                .asJsonObject()
+                                                .setCallback(new FutureCallback<JsonObject>() {
+                                                    @Override
+                                                    public void onCompleted(Exception e, JsonObject response) {
+                                                        if (e != null) e.printStackTrace();
+                                                        if (response != null) Log.v(TAG, response.toString());
+                                                    }
+                                                });
+                                    }
+                                })
+                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // do nothing
+                                    }
+                                })
+                                .show();
+                    }
+                });
                 mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 mMap.setMyLocationEnabled(true);
 
@@ -135,7 +189,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
         boolean werewolf = sp.getBoolean("werewolf", false);
 
         if (marker == null) {
-            marker = mMap.addMarker(new MarkerOptions().position(latLng));
+            marker = mMap.addMarker(new MarkerOptions().position(latLng).title("You"));
             marker.showInfoWindow();
         }
         else {
@@ -176,25 +230,39 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
                 Location charLocation = new Location("Test");
                 charLocation.setLatitude(character.getLocation().latitude);
                 charLocation.setLongitude(character.getLocation().longitude);
-                if (mLocation.distanceTo(charLocation) < 200) {
-                    Marker mMarker = mMap.addMarker(new MarkerOptions().position(character.getLocation()).title(character.getName()));
-                    mMarker.showInfoWindow();
+
+                if (mLocation.distanceTo(charLocation) < 200)
+                {
+                    int user_id = Integer.parseInt(sp.getString("user_id", "couldn't find userid"));
+                    if (character.getId() != user_id) {
+                        Marker mMarker = mMap.addMarker(new MarkerOptions().position(character.getLocation()).title(character.getName()));
+                        markerCharMap.put(mMarker.getId(), character);
+                        mMarker.showInfoWindow();
+                    }
+
                 }
             }
-        } else if (townsList != null) {
+        }
+        else if (townsList != null) {
             for (Marker mMarker : townsList) {
-                //mMarker.remove();
+                mMarker.remove();
             }
 
-                ArrayList<Character> mCharacterList = Character.downloadChars(context);
+            ArrayList<Character> mCharacterList = Character.downloadChars(context);
 
-                for (Character character : mCharacterList) {
-                Location charLocation = new Location("Test");
-                charLocation.setLatitude(character.getLocation().latitude);
-                charLocation.setLongitude(character.getLocation().longitude);
-                if (mLocation.distanceTo(charLocation) < 200) {
+
+
+            for (Character character : mCharacterList) {
+            Location charLocation = new Location("Test");
+            charLocation.setLatitude(character.getLocation().latitude);
+            charLocation.setLongitude(character.getLocation().longitude);
+            if (mLocation.distanceTo(charLocation) < 200) {
+                int user_id = Integer.parseInt(sp.getString("user_id", "couldn't find userid"));
+                if (character.getId() != user_id) {
                     Marker mMarker = mMap.addMarker(new MarkerOptions().position(character.getLocation()).title(character.getName()));
+                    markerCharMap.put(mMarker.getId(), character);
                     mMarker.showInfoWindow();
+                }
                 }
             }
         }
@@ -204,12 +272,6 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnInfoWindowCli
             Log.v(TAG, "animating camera");
             mMap.animateCamera(cameraUpdate, 4000, null);
         }
-    }
-
-
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-
     }
 
     @Override

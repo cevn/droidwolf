@@ -152,8 +152,8 @@ public class BackgroundLocationService extends Service implements
         Log.v(TAG, url);
 
         JsonObject json = new JsonObject();
-        json.addProperty("lat", Double.toString(location.getLatitude()));
-        json.addProperty("long", Double.toString(location.getLongitude()));
+        json.addProperty("latitude", Double.toString(location.getLatitude()));
+        json.addProperty("longitude", Double.toString(location.getLongitude()));
         json.addProperty("id", userid);
 
         Log.v(TAG, json.toString());
