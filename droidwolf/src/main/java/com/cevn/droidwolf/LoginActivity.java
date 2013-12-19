@@ -159,6 +159,8 @@ public class LoginActivity extends Activity {
                         public void onCompleted(Exception e, JsonObject response) {
                             if (e != null) {
                                 e.printStackTrace();
+                                mEmailView.setError(getString(R.string.error_timed_out));
+                                showProgress(false);
                             }
 
                             if (response != null) {
@@ -185,11 +187,18 @@ public class LoginActivity extends Activity {
 
                                         startActivity(mIntent);
                                     }
-                                } catch (Exception f) {}
-                            } else {
+                                    else {
+                                        showProgress(false);
+                                        mEmailView.setError(getString(R.string.error_email_taken));
+                                        mEmailView.requestFocus();
+                                    }
+                                } catch (Exception f) {
+                                    f.printStackTrace();
+                                    showProgress(false);
                                     mPasswordView.setError(getString(R.string.error_incorrect_password));
                                     mPasswordView.requestFocus();
                                 }
+                            }
                             }
                     });
         }

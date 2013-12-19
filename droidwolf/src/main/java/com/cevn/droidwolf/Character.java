@@ -8,7 +8,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.annotations.Expose;
 import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class Character {
         String suffix  = "/character/show_alive";
         String url = baseUrl + userid + suffix;
 
-        Log.v(TAG, url);
+        //Log.v(TAG, url);
         JsonArray characters;
 
         try {
@@ -67,9 +66,9 @@ public class Character {
 
             while (iter.hasNext()) {
                 JsonElement json = iter.next();
-                Log.v(TAG, "json: " + json.toString());
+                //Log.v(TAG, "json: " + json.toString());
                 Character mCharacter = new Gson().fromJson(json, Character.class);
-                Log.v(TAG, "Character name:" +mCharacter.getName());
+                //Log.v(TAG, "Character name:" +mCharacter.getName());
                 mCharacterList.add(mCharacter);
             }
         } catch (Exception e) {e.printStackTrace();}

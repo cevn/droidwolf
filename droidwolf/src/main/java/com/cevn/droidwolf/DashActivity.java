@@ -4,19 +4,13 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 public class DashActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -87,6 +81,12 @@ public class DashActivity extends Activity
                 mTitle = getString(R.string.title_section3);
                 mFragment = new MyGameFragment().newInstance();
                 break;
+            case 3:
+                mTitle = getString(R.string.title_section4);
+                mFragment = new StatusFragment().newInstance();
+            case 4:
+                mTitle = getString(R.string.title_section5);
+                mFragment = new HighScoresFragment().newInstance();
 
         }
 

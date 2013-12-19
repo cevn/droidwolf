@@ -185,28 +185,40 @@ public class SignupActivity extends Activity {
 
                             if (response != null) {
                                 Log.v(TAG, response.toString());
-                                String success = response.get("success").toString();
-                                String id = response.get("id").toString();
-                                boolean werewolf = response.get("werewolf").getAsBoolean();
+                                try {
+                                    String success = response.get("success").toString();
+                                    if (success.equals("true")) {
+                                        String id = response.get("id").toString();
+                                        boolean werewolf = response.get("werewolf").getAsBoolean();
 
-                                Log.v("Signup success", success);
-                                Log.v("User id", id);
-                                showProgress(false);
+                                        Log.v("Signup success", success);
+                                        Log.v("User id", id);
+                                        showProgress(false);
 
-                                Intent mIntent = new Intent(SignupActivity.this, DashActivity.class);
+                                        Intent mIntent = new Intent(SignupActivity.this, DashActivity.class);
 
-                                SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
-                                SharedPreferences.Editor spedit = sp.edit();
+                                        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+                                        SharedPreferences.Editor spedit = sp.edit();
 
-                                spedit.putString("email", mEmail);
-                                spedit.putString("user_id", id);
-                                spedit.putBoolean("werewolf", werewolf);
-                                spedit.commit();
+                                        spedit.putString("email", mEmail);
+                                        spedit.putString("user_id", id);
+                                        spedit.putBoolean("werewolf", werewolf);
+                                        spedit.commit();
+                                        startActivity(mIntent);
+                                    }
+                                    else {
+                                        mEmailView.setError(getString(R.string.error_email_taken));
+                                        showProgress(false);
+                                        mEmailView.requestFocus();
+                                    }
+                                } catch (Exception f) {
+                                    f.printStackTrace();
+                                }
 
-                                startActivity(mIntent);
                             } else {
                                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                                 mPasswordView.requestFocus();
+                                showProgress(false);
                             }
                         }
                     });

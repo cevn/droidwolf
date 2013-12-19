@@ -17,5 +17,9 @@
     <string name="action_sign_up">Sign up!</string>
     <string name="action_sign_in">Sign in!</string>
     <string name="error_match_password">Password must match confirmation</string>
+    <string name="error_email_taken">Email already taken</string>
+    <string name="error_timed_out">Request to the server took too long. Try again!</string>
+    <string name="title_section4">Character Status</string>
+    <string name="title_section5">Top Scores</string>
 
 </resources>

@@ -1,6 +1,5 @@
 package com.cevn.droidwolf;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -14,8 +13,6 @@ import android.widget.Toast;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
