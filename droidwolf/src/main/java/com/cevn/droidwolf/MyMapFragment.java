@@ -15,6 +15,7 @@ import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.maps.CameraUpdate;
@@ -60,6 +61,31 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        MyApplication.pauseMap();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MyApplication.resumeMap();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        MyApplication.pauseMap();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        MyApplication.pauseMap();
+    }
+
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         FragmentManager fm = getActivity().getFragmentManager();
         mMapFragment = (MapFragment) fm.findFragmentById(R.id.map);
@@ -88,6 +114,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
         }
 
         initMap();
+        MyApplication.resumeMap();
 
         return mView;
     }
@@ -168,43 +195,57 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Character mChar = markerCharMap.get(marker);
+        final Character mChar = markerCharMap.get(marker);
         Log.v(TAG, "clicked on marker: " + marker.getId());
         Log.v(TAG, "clicked on character: " + mChar.getName());
-        final String id = getActivity().getSharedPreferences("user", Context.MODE_PRIVATE).getString("user_id", "none found");
+        final String id = getActivity()
+                .getSharedPreferences("user", Context.MODE_PRIVATE)
+                .getString("user_id", "none found");
+
         final int victim_id = mChar.getId();
 
         new AlertDialog.Builder(getActivity())
-                .setTitle("Kill " + mChar.getName())
-                .setMessage("Are you sure you want to kill " + mChar.getName() + "?")
-                .setPositiveButton("I hate that guy", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        JsonObject jsonObject = new JsonObject();
-                        jsonObject.addProperty("id", id);
-                        jsonObject.addProperty("victimid", victim_id);
-                        String baseurl = "https://railswolf.herokuapp.com/users/" ;
-                        String user_id = id;
-                        String route = "/character/kill";
-                        String url = baseurl + user_id + route;
-                        Ion.with(getActivity(), url)
-                                .setHeader("Content-Type", "application/json")
-                                .setHeader("Accept", "application/json")
-                                .setJsonObjectBody(jsonObject)
-                                .asJsonObject()
-                                .setCallback(new FutureCallback<JsonObject>() {
-                                    @Override
-                                    public void onCompleted(Exception e, JsonObject response) {
-                                        if (e != null) e.printStackTrace();
-                                        if (response != null) Log.v(TAG, response.toString());
+        .setTitle("Kill " + mChar.getName())
+        .setMessage("Are you sure you want to kill " + mChar.getName() + "?")
+        .setPositiveButton("I hate that guy", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", id);
+                jsonObject.addProperty("victimid", victim_id);
+                String baseurl = "https://railswolf.herokuapp.com/users/";
+                String user_id = id;
+                String route = "/character/kill";
+                String url = baseurl + user_id + route;
+                Ion.with(getActivity(), url)
+                        .setHeader("Content-Type", "application/json")
+                        .setHeader("Accept", "application/json")
+                        .setJsonObjectBody(jsonObject)
+                        .asJsonObject()
+                        .setCallback(new FutureCallback<JsonObject>() {
+                            @Override
+                            public void onCompleted(Exception e, JsonObject response) {
+                                if (e != null) e.printStackTrace();
+                                if (response != null) {
+                                    Log.v(TAG, response.toString());
+                                    try {
+                                        String success = response.get("success").toString();
+                                        if (success.equals("true")) {
+                                            Toast.makeText(getActivity(),
+                                                    "You killed " + mChar.getName() + "! You monster.", Toast.LENGTH_LONG).show();
+                                        }
+                                    } catch (Exception f) {
+                                        f.printStackTrace();
                                     }
-                                });
-                    }
-                })
-                .setNegativeButton("Not yet", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
-                    }
-                })
-                .show();
+                                }
+                            }
+                        });
+            }
+        })
+        .setNegativeButton("Not yet", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // do nothing
+            }
+        })
+        .show();
     }
 }

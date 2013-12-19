@@ -1,6 +1,8 @@
 package com.cevn.droidwolf;
 
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -18,6 +20,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
+
+import java.util.List;
 
 /**
  * BackgroundLocationService used for tracking user location in the background.
@@ -126,24 +130,17 @@ public class BackgroundLocationService extends Service implements
     // Define the callback method that receives location updates
     @Override
     public void onLocationChanged(Location location) {
-        // Report to the UI that the location was updated
-
-
-
         String baseurl = "https://railswolf.herokuapp.com/users/";
         String userid = getApplicationContext().getSharedPreferences("user", MODE_PRIVATE).getString("user_id", "could not find id");
         String route = "/character/move";
 
         String url = baseurl + userid + route;
 
-        Log.v(TAG, url);
-
         JsonObject json = new JsonObject();
         json.addProperty("latitude", Double.toString(location.getLatitude()));
         json.addProperty("longitude", Double.toString(location.getLongitude()));
         json.addProperty("id", userid);
 
-        Log.v(TAG, json.toString());
 
         Ion.with(getApplicationContext(), url)
                 .setHeader("Content-Type", "application/json")
@@ -163,14 +160,11 @@ public class BackgroundLocationService extends Service implements
                     }
                 });
 
-        String msg = Double.toString(location.getLatitude()) + "," +
-                Double.toString(location.getLongitude());
-        Log.d(TAG, msg);
 
-        MyMapFragment mFragment = MyMapFragment.newInstance();
-
-        mFragment.updateLocation(location, getApplicationContext());
-        //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        if (MyApplication.isMapVisible()) {
+            MyMapFragment mFragment = MyMapFragment.newInstance();
+            mFragment.updateLocation(location, getApplicationContext());
+        }
     }
 
     @Override

@@ -8,6 +8,8 @@
     <string name="title_section1">Player Map</string>
     <string name="title_section2">Vote on Players</string>
     <string name="title_section3">Game Events</string>
+    <string name="title_section4">Character Status</string>
+    <string name="title_section5">Top Scores</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_signout">Sign out</string>
@@ -19,7 +21,6 @@
     <string name="error_match_password">Password must match confirmation</string>
     <string name="error_email_taken">Email already taken</string>
     <string name="error_timed_out">Request to the server took too long. Try again!</string>
-    <string name="title_section4">Character Status</string>
-    <string name="title_section5">Top Scores</string>
+
 
 </resources>

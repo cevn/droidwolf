@@ -35,7 +35,6 @@ public class MyListFragment extends ListFragment {
 
         list.addHeaderView(header);
 
-
         list.setAdapter(characterAdapter);
         return view;
     }
