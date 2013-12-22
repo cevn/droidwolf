@@ -24,6 +24,8 @@ public class Character {
     private String name;
     public boolean werewolf;
     private boolean dead;
+    private int score;
+    private int max_score;
 
     private double latitude;
     private double longitude;
@@ -44,6 +46,8 @@ public class Character {
     public LatLng getLocation() {
         return new LatLng(latitude, longitude);
     }
+    public int getScore(){ return this.score; }
+    public int getHighScore() {return this.max_score; }
 
     final static public ArrayList<Character> downloadChars(Context context) {
         final ArrayList<Character> mCharacterList = new ArrayList<Character>();
