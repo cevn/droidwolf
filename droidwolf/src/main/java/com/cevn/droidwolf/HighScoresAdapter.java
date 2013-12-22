@@ -41,10 +41,10 @@ public class HighScoresAdapter extends ArrayAdapter<Character>{
         if(row == null)
         {
             LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = vi.inflate(R.layout.listview_item_row, parent, false);
+            row = vi.inflate(R.layout.listview_item_row_hs, parent, false);
             holder = new HighScoresHolder();
-            holder.txtTitle = (TextView)row.findViewById(R.id.txtTitle);
-            holder.score = (TextView) row.findViewById(R.id.charVotes);
+            holder.txtTitle = (TextView)row.findViewById(R.id.hsTitle);
+            holder.score = (TextView) row.findViewById(R.id.highScore);
 
             row.setTag(holder);
         }
@@ -57,39 +57,6 @@ public class HighScoresAdapter extends ArrayAdapter<Character>{
         holder.txtTitle.setText(mChar.getName());
         holder.score.setText(Integer.toString(mChar.getHighScore()));
         holder.id = mChar.getId();
-
-        holder.txtTitle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                JsonObject jsonObject = new JsonObject();
-                final Character mChar2 = characterList.get(newpos);
-                jsonObject.addProperty("victimid", mChar2.getId());
-                String baseurl = "https://railswolf.herokuapp.com/users/";
-                SharedPreferences sp = context.getSharedPreferences("user", Context.MODE_PRIVATE);
-                String user_id = sp.getString("user_id", "no id found");
-                String rest = "/character/vote";
-                String url = baseurl + user_id + rest;
-                Ion.with(context, url)
-                        .setHeader("Accept", "application/json")
-                        .setHeader("Content-Type", "application/json")
-                        .setJsonObjectBody(jsonObject)
-                        .asJsonObject()
-                        .setCallback(new FutureCallback<JsonObject>() {
-                            @Override
-                            public void onCompleted(Exception e, JsonObject response) {
-                                if (e != null) e.printStackTrace();
-                                Log.v(TAG, response.toString());
-                                Log.v(TAG, response.get("success").toString());
-                                if (response.get("success").equals("true")) {
-                                    Toast.makeText(getContext(), "Voting for" + mChar2.getName() + "succeeded!", Toast.LENGTH_LONG).show();
-                                }
-                                else if (response.get("success").equals("false")) {
-                                    Toast.makeText(getContext(), "You can only vote once per day.", Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        });
-            }
-        });
 
         return row;
     }

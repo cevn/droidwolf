@@ -388,8 +388,8 @@ public class LoginActivity extends Activity {
                                     }
                                     else {
                                         showProgress(false);
-                                        mEmailView.setError(getString(R.string.error_email_taken));
-                                        mEmailView.requestFocus();
+                                        mPasswordView.setError(getString(R.string.error_incorrect_password));
+                                        mPasswordView.requestFocus();
                                     }
                                 } catch (Exception f) {
                                     f.printStackTrace();
