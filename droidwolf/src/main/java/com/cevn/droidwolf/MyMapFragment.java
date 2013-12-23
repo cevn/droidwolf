@@ -10,11 +10,13 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -33,6 +35,8 @@ import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
@@ -84,11 +88,34 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
         MyApplication.pauseMap();
     }
 
+    int getMinutesUntilNextHour() {
+        Calendar c = Calendar.getInstance();
+        Date d = new Date();
+        c.setTime(d);
+        c.add(Calendar.HOUR, 1);
+        c.set(Calendar.MINUTE, 0);
+        return (int) (c.getTimeInMillis() - d.getTime() * 1000 * 60);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         FragmentManager fm = getActivity().getFragmentManager();
         mMapFragment = (MapFragment) fm.findFragmentById(R.id.map);
+
+        (new CountDownTimer(getMinutesUntilNextHour()*60*1000,1000000){
+
+            @Override
+            public void onFinish() {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                TextView tv = (TextView)mView.findViewById(R.id.countdown);
+
+                tv.setText("Time until game update: " + Integer.toString(getMinutesUntilNextHour()));
+            }
+        }).start();
 
         if (mView != null) {
             ViewGroup parent = (ViewGroup) mView.getParent();

@@ -192,32 +192,39 @@ public class LoginActivity extends Activity {
     private void sendRegistrationIdToBackend() {
         Log.i(TAG, "Sending registration id to railswolf");
         SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
-        String userid = sp.getString("user_id", "could not find id");
-        String baseurl = "https://railswolf.herokuapp.com/users/";
-        String route = "/reg_id";
+        String userid = sp.getString("user_id", "");
+        if (userid.isEmpty()) {
+            Intent mIntent = new Intent(LoginActivity.this, SignupActivity.class);
+            startActivity(mIntent);
+        } else {
+            String baseurl = "https://railswolf.herokuapp.com/users/";
+            String route = "/reg_id";
 
-        JsonObject json = new JsonObject();
+            JsonObject json = new JsonObject();
 
-        json.addProperty("registration_id", regid);
+            json.addProperty("registration_id", regid);
 
-        Ion.with(getBaseContext(), baseurl+userid+route)
-                .setHeader("Accept", "application/json")
-                .setHeader("Content-Type", "application/json")
-                .setJsonObjectBody(json)
-                .asJsonObject()
-                .setCallback(new FutureCallback<JsonObject>() {
-                    @Override
-                    public void onCompleted(Exception e, JsonObject response) {
-                        if (e != null) e.printStackTrace();
+            Ion.with(getBaseContext(), baseurl+userid+route)
+                    .setHeader("Accept", "application/json")
+                    .setHeader("Content-Type", "application/json")
+                    .setJsonObjectBody(json)
+                    .asJsonObject()
+                    .setCallback(new FutureCallback<JsonObject>() {
+                        @Override
+                        public void onCompleted(Exception e, JsonObject response) {
+                            if (e != null) e.printStackTrace();
 
-                        if (response != null ) {
-                            try {
-                                String success = response.get("success").toString();
-                                if (success.equals("true")) Toast.makeText(getBaseContext(), "Registration successful", Toast.LENGTH_LONG).show();
-                            } catch (NullPointerException f) {}
+                            if (response != null) {
+                                try {
+                                    String success = response.get("success").toString();
+                                    if (success.equals("true"))
+                                        Toast.makeText(getBaseContext(), "Registration successful", Toast.LENGTH_LONG).show();
+                                } catch (NullPointerException f) {
+                                }
+                            }
                         }
-                    }
-                });
+                    });
+        }
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
