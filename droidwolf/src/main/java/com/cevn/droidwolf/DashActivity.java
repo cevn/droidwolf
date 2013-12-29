@@ -87,7 +87,6 @@ public class DashActivity extends Activity
                 MyApplication.pauseMap();
                 mTitle = getString(R.string.title_section2);
                 mFragment = new MyListFragment().newInstance();
-
                 break;
             case 2:
                 MyApplication.pauseMap();
@@ -98,11 +97,12 @@ public class DashActivity extends Activity
                 MyApplication.pauseMap();
                 mTitle = getString(R.string.title_section4);
                 mFragment = new StatusFragment().newInstance();
+                break;
             case 4:
                 MyApplication.pauseMap();
                 mTitle = getString(R.string.title_section5);
                 mFragment = new HighScoresFragment().newInstance();
-
+                break;
         }
 
         fragmentManager.beginTransaction()

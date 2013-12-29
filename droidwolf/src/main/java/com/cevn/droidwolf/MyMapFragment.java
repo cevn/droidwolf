@@ -89,12 +89,9 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
     }
 
     int getMinutesUntilNextHour() {
-        Calendar c = Calendar.getInstance();
-        Date d = new Date();
-        c.setTime(d);
-        c.add(Calendar.HOUR, 1);
-        c.set(Calendar.MINUTE, 0);
-        return (int) (c.getTimeInMillis() - d.getTime() * 1000 * 60);
+        Calendar rightNow = Calendar.getInstance();
+        int currentMinute = rightNow.get(Calendar.MINUTE);
+        return (60 - currentMinute);
     }
 
     @Override
@@ -102,7 +99,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
         FragmentManager fm = getActivity().getFragmentManager();
         mMapFragment = (MapFragment) fm.findFragmentById(R.id.map);
 
-        (new CountDownTimer(getMinutesUntilNextHour()*60*1000,1000000){
+        (new CountDownTimer(getMinutesUntilNextHour()*1000*60,1000*60){
 
             @Override
             public void onFinish() {
@@ -113,7 +110,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
             public void onTick(long millisUntilFinished) {
                 TextView tv = (TextView)mView.findViewById(R.id.countdown);
 
-                tv.setText("Time until game update: " + Integer.toString(getMinutesUntilNextHour()));
+                tv.setText("Time until game update: " + Integer.toString(getMinutesUntilNextHour()) + " minutes");
             }
         }).start();
 

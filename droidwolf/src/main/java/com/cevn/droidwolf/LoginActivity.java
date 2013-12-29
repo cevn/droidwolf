@@ -371,6 +371,9 @@ public class LoginActivity extends Activity {
                                     if (success.equals("true")) {
                                         String id = response.get("id").toString();
                                         String registration_id = response.get("registration_id").toString();
+                                        String cur_score = response.get("cur_score").toString();
+                                        String max_score = response.get("max_score").toString();
+                                        boolean dead = response.get("dead").getAsBoolean();
 
                                         if (registration_id.equals("null")) registerInBackground();
 
@@ -388,7 +391,10 @@ public class LoginActivity extends Activity {
                                         spedit.putString("registration_id", registration_id);
                                         spedit.putString("email", mEmail);
                                         spedit.putString("user_id", id);
+                                        spedit.putBoolean("dead", dead);
                                         spedit.putBoolean("werewolf", werewolf);
+                                        spedit.putString("cur_score", cur_score);
+                                        spedit.putString("max_score", max_score);
                                         spedit.commit();
 
                                         startActivity(mIntent);
