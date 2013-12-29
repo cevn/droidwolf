@@ -11,9 +11,7 @@
         android:layout_marginLeft="20sp"
         android:gravity="center_vertical"
         android:layout_gravity="left"
-        android:textSize="15sp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp" />
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/timeStamp"
@@ -22,10 +20,7 @@
         android:layout_height="fill_parent"
         android:gravity="center_vertical"
         android:textSize="15sp"
-        android:layout_marginRight="20sp"
         android:layout_gravity="right"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
         />
 
 </LinearLayout>

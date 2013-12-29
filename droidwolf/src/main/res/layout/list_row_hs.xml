@@ -11,10 +11,9 @@
         android:layout_marginLeft="20sp"
         android:gravity="center_vertical"
         android:layout_gravity="left"
-        android:textStyle="bold"
         android:textSize="22sp"
-        android:layout_marginTop="7sp"
-        android:layout_marginBottom="7sp" />
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp" />
 
     <TextView
         android:id="@+id/highScore"
@@ -24,8 +23,8 @@
         android:gravity="center"
         android:textSize="22sp"
         android:layout_gravity="right"
-        android:layout_marginTop="7sp"
-        android:layout_marginBottom="7sp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
         />
 
 </LinearLayout>
