@@ -57,7 +57,23 @@ public class EventAdapter extends ArrayAdapter<Event> {
 
         ArrayList<Event> eventList = Event.downloadEvents(getContext());
         final Event mEvent= eventList.get(position);
-        holder.eventTitle.setText(mEvent.getType());
+
+        SharedPreferences sp = getContext().getSharedPreferences("user", Context.MODE_PRIVATE);
+        boolean werewolf = sp.getBoolean("werewolf", false);
+
+        if (mEvent.getType().equals("start")) {
+            holder.eventTitle.setText("Game commences.");
+        } else if (mEvent.getType().equals("kill")) {
+            if (werewolf) {
+                holder.eventTitle.setText(mEvent.getVictim() + " was killed by " + mEvent.getKiller() + "!");
+            } else {
+                holder.eventTitle.setText(mEvent.getVictim() + " was killed by a werewolf!");
+            }
+        } else if (mEvent.getType().equals("execute")) {
+            holder.eventTitle.setText(mEvent.getVictim() + " was executed by popular vote!");
+        } else if (mEvent.getType().equals("end")) {
+            holder.eventTitle.setText("Game concludes.");
+        }
         holder.timeStamp.setText(mEvent.getCreatedAt());
 
 
@@ -68,6 +84,5 @@ public class EventAdapter extends ArrayAdapter<Event> {
     {
         TextView eventTitle;
         TextView timeStamp;
-        int id;
     }
 }

@@ -1,7 +1,6 @@
 package com.cevn.droidwolf;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -12,23 +11,47 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * Created by sameer on 12/29/13.
+ * Convenience class mostly used for deserializing json using Gson.
+ * Static method downloadEvents so that you can get a list of events from anywhere.
  */
 public class Event {
     private int id;
-    private String type;
-    private int victimid;
-    private int killerid;
-    private double latitude;
-    private double longitude;
+    private String event_type;
+    private String victim;
+    private String killer;
     private String created_at;
 
-    public String getType () { return type; }
-    public String getCreatedAt () { return created_at; }
+    private double latitude;
+    private double longitude;
+
+    public String getType () { return event_type; }
+
+
+    /**
+     * Parse the postgres created_at field into human readable form and return it.
+     * @return date in human readable form.
+     */
+    public String getCreatedAt () {
+        String[] DateTime = created_at.split("T");
+        String date = DateTime[0];
+        String time = DateTime[1];
+
+        String[] YrMonthDay = date.split("-");
+        String[] HourMinuteSecond = time.split(":");
+
+        String month = YrMonthDay[1];
+        String day = YrMonthDay[2];
+
+        String hour = HourMinuteSecond[0];
+        String minute = HourMinuteSecond[1];
+
+        return month + "/" + day + "   " + hour + ":" + minute;
+    }
+    public String getVictim () { return victim; }
+    public String getKiller() { return killer; }
 
     final static public ArrayList<Event> downloadEvents(Context context) {
         final ArrayList<Event> mEventList = new ArrayList<Event>();
-        SharedPreferences mSharedPrefs = context.getSharedPreferences("user", Context.MODE_PRIVATE);
         String url = "https://railswolf.herokuapp.com/events/";
 
         //Log.v(TAG, url);

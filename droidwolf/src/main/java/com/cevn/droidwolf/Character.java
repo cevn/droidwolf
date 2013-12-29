@@ -33,15 +33,15 @@ public class Character {
 
 
     public String getName() {
-        return this.name;
+        return name;
     }
-    public int getVotes() { return this.votes; }
-    public int getId() { return this.id; }
+    public int getVotes() { return votes; }
+    public int getId() { return id; }
     public LatLng getLocation() {
         return new LatLng(latitude, longitude);
     }
-    public int getScore(){ return this.score; }
-    public int getHighScore() {return this.max_score; }
+    public int getScore(){ return score; }
+    public int getHighScore() {return max_score; }
 
     final static public ArrayList<Character> downloadChars(Context context) {
         final ArrayList<Character> mCharacterList = new ArrayList<Character>();
