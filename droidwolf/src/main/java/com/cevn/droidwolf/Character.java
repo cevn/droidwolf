@@ -32,13 +32,6 @@ public class Character {
     private double longitude;
 
 
-    public Character(int id, String name, boolean werewolf) {
-        this.id = id;
-        this.name = name;
-        this.werewolf = werewolf;
-    }
-
-
     public String getName() {
         return this.name;
     }

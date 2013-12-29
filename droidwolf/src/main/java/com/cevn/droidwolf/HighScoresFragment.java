@@ -26,9 +26,9 @@ public class HighScoresFragment extends Fragment{
         Log.v(TAG, mCharacterList.toString());
 
         View header = inflater.inflate(R.layout.header_hs, null);
-        View view = inflater.inflate(R.layout.fragment_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_highscore, container, false);
 
-        HighScoresAdapter hsAdapter= new HighScoresAdapter(getActivity(), R.layout.listview_item_row_hs, mCharacterList);
+        HighScoresAdapter hsAdapter= new HighScoresAdapter(getActivity(), R.layout.list_row_hs, mCharacterList);
         ListView list = (ListView) view.findViewById(android.R.id.list);
 
         list.addHeaderView(header);

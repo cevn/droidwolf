@@ -43,7 +43,7 @@ public class CharacterAdapter extends ArrayAdapter<Character> {
         if(row == null)
         {
             LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = vi.inflate(R.layout.listview_item_row, parent, false);
+            row = vi.inflate(R.layout.list_row, parent, false);
             holder = new CharacterHolder();
             holder.txtTitle = (TextView)row.findViewById(R.id.txtTitle);
             holder.votes = (TextView) row.findViewById(R.id.charVotes);
@@ -58,7 +58,6 @@ public class CharacterAdapter extends ArrayAdapter<Character> {
         final Character mChar = characterList.get(position);
         holder.txtTitle.setText(mChar.getName());
         holder.votes.setText(Integer.toString(mChar.getVotes()));
-        holder.id = mChar.getId();
 
         holder.txtTitle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,6 +118,5 @@ public class CharacterAdapter extends ArrayAdapter<Character> {
     {
         TextView txtTitle;
         TextView votes;
-        int id;
     }
 }

@@ -30,7 +30,7 @@ public class MyListFragment extends ListFragment {
         View header = inflater.inflate(R.layout.header, null);
         View view = inflater.inflate(R.layout.fragment_list, container, false);
 
-        CharacterAdapter characterAdapter = new CharacterAdapter(getActivity(), R.layout.listview_item_row, mCharacterList);
+        CharacterAdapter characterAdapter = new CharacterAdapter(getActivity(), R.layout.list_row, mCharacterList);
         ListView list = (ListView) view.findViewById(android.R.id.list);
 
         list.addHeaderView(header);

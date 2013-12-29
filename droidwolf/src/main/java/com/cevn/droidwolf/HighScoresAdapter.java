@@ -1,18 +1,11 @@
 package com.cevn.droidwolf;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.gson.JsonObject;
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
 
@@ -41,7 +34,7 @@ public class HighScoresAdapter extends ArrayAdapter<Character>{
         if(row == null)
         {
             LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = vi.inflate(R.layout.listview_item_row_hs, parent, false);
+            row = vi.inflate(R.layout.list_row_hs, parent, false);
             holder = new HighScoresHolder();
             holder.txtTitle = (TextView)row.findViewById(R.id.hsTitle);
             holder.score = (TextView) row.findViewById(R.id.highScore);
