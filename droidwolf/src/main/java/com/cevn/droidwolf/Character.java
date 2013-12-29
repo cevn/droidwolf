@@ -64,9 +64,10 @@ public class Character {
 
             while (iter.hasNext()) {
                 JsonElement json = iter.next();
-                //Log.v(TAG, "json: " + json.toString());
+                Log.v(TAG, "json: " + json.toString());
                 Character mCharacter = new Gson().fromJson(json, Character.class);
-                //Log.v(TAG, "Character name:" +mCharacter.getName());
+                Log.v(TAG, "Character name:" +mCharacter.getName());
+                Log.v(TAG, "Character score:" +mCharacter.getScore());
                 mCharacterList.add(mCharacter);
             }
         } catch (Exception e) {e.printStackTrace();}

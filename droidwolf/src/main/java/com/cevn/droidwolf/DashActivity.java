@@ -151,7 +151,7 @@ public class DashActivity extends Activity
     private void signOut() {
         SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
         SharedPreferences.Editor spedit = sp.edit();
-        spedit.remove("remember_token");
+        spedit.clear();
         spedit.commit();
 
         Intent mServiceIntent = new Intent(this, BackgroundLocationService.class);

@@ -229,6 +229,12 @@ public class LoginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+        if (sp.getBoolean("signed_in", false)) {
+            Intent mIntent = new Intent(LoginActivity.this, DashActivity.class);
+            startActivity(mIntent);
+        }
+
         this.context = getBaseContext();
         super.onCreate(savedInstanceState);
 
@@ -395,6 +401,7 @@ public class LoginActivity extends Activity {
                                         spedit.putBoolean("werewolf", werewolf);
                                         spedit.putString("cur_score", cur_score);
                                         spedit.putString("max_score", max_score);
+                                        spedit.putBoolean("signed_in", true);
                                         spedit.commit();
 
                                         startActivity(mIntent);
