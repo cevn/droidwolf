@@ -10,8 +10,8 @@ android:layout_width="match_parent" android:layout_height="match_parent">
     android:layout_gravity="left"
     android:textStyle="bold"
     android:textSize="22sp"
-    android:layout_marginTop="5dp"
-    android:layout_marginBottom="5dp" />
+    android:layout_marginBottom="10dp"
+    />
 
 <TextView
     android:text="Time"
@@ -23,8 +23,7 @@ android:layout_width="match_parent" android:layout_height="match_parent">
     android:textSize="22sp"
     android:layout_marginRight="20sp"
     android:layout_gravity="right"
-    android:layout_marginTop="5dp"
-    android:layout_marginBottom="15dp"
+    android:layout_marginBottom="10dp"
     />
 
 </LinearLayout>

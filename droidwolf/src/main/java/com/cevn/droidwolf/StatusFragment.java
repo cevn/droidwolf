@@ -45,11 +45,11 @@ public class StatusFragment extends Fragment{
         }
 
         if (sp.getBoolean("dead", false)) {
-            dead.setText("Status: Alive");
-            dead.setTextColor(Color.GREEN);
-        } else {
             dead.setText("Status: Dead");
             dead.setTextColor(Color.RED);
+        } else {
+            dead.setText("Status: Alive");
+            dead.setTextColor(Color.GREEN);
         }
 
         cur_score.setText("Score: " + sp.getString("cur_score", "score not found"));

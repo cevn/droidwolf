@@ -6,9 +6,10 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingTop="10dp"
+
         android:id="@android:id/list"
         android:divider="@android:color/holo_green_light"
         android:dividerHeight="1dp"
-        >
-    </ListView>
+        />
 </RelativeLayout>
