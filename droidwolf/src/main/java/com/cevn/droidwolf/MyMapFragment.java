@@ -256,6 +256,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
                                         if (success.equals("true")) {
                                             Toast.makeText(getActivity(),
                                                     "You killed " + mChar.getName() + "! You monster.", Toast.LENGTH_LONG).show();
+                                        } else {                                            Toast.makeText(getActivity(), "Kill failed!", Toast.LENGTH_LONG).show();
                                         }
                                     } catch (Exception f) {
                                         f.printStackTrace();
