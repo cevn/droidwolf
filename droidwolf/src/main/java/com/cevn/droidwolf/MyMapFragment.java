@@ -46,10 +46,10 @@ import java.util.WeakHashMap;
 public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
 
 
-    private static Dialog d;
+    protected static Dialog d;
     private static final String TAG = "MyMapFragment >";
-    private static Circle scentRadius;
-    private static Circle killRadius;
+    protected static Circle scentRadius;
+    protected static Circle killRadius;
     private static HashMap<Marker, Character> markerCharMap;
 
 
@@ -60,8 +60,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
 
 
     public static MyMapFragment newInstance() {
-        MyMapFragment fragment = new MyMapFragment();
-        return fragment;
+        return new MyMapFragment();
     }
 
     @Override
@@ -121,7 +120,7 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
 
         try {
             mView = inflater.inflate(R.layout.fragment_map, container, false);
-        } catch (InflateException e) {}
+        } catch (InflateException e) {e.printStackTrace();}
 
         if (mMapFragment == null) {
             mMapFragment = MapFragment.newInstance();
@@ -237,9 +236,8 @@ public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickL
                 jsonObject.addProperty("id", id);
                 jsonObject.addProperty("victimid", victim_id);
                 String baseurl = "https://railswolf.herokuapp.com/users/";
-                String user_id = id;
                 String route = "/character/kill";
-                String url = baseurl + user_id + route;
+                String url = baseurl + id + route;
                 Ion.with(getActivity(), url)
                         .setHeader("Content-Type", "application/json")
                         .setHeader("Accept", "application/json")
