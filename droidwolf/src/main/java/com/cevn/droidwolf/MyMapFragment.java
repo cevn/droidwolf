@@ -1,7 +1,6 @@
 package com.cevn.droidwolf;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -36,9 +35,7 @@ import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.WeakHashMap;
 
 /**
  * A map fragment containing a simple view.
@@ -46,7 +43,6 @@ import java.util.WeakHashMap;
 public class MyMapFragment extends Fragment implements GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
 
 
-    protected static Dialog d;
     private static final String TAG = "MyMapFragment >";
     protected static Circle scentRadius;
     protected static Circle killRadius;
