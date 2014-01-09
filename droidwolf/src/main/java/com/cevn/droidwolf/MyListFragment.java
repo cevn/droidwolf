@@ -27,6 +27,8 @@ public class MyListFragment extends ListFragment {
         ArrayList<Character> mCharacterList = Character.downloadChars(getActivity());
         Log.v(TAG, mCharacterList.toString());
 
+
+
         View header = inflater.inflate(R.layout.header, null);
         View view = inflater.inflate(R.layout.fragment_list, container, false);
 

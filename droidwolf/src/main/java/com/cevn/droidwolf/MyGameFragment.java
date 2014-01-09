@@ -10,7 +10,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 /**
- * Created by sameer on 12/11/13.
+ * Fragment which displays the game events.
  */
 public class MyGameFragment extends android.app.Fragment {
     private final String TAG = "MyGameFragment";
